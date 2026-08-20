@@ -7,14 +7,27 @@ import { Eye, EyeOff } from 'lucide-react'
 import Button from '../components/Button'
 import api from '../services/api'
 import axios from 'axios'
+import { useAppDispatch,useAppSelector } from '../redux/app/hook'
+import { useNavigate } from 'react-router-dom'
+import { setLoading } from '../redux/app/loadingSlice'
+import { setUser } from '../redux/app/authSlice'
 
 const Login = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const user = useAppSelector(
+    (state) => state.auth.user
+  );
+  console.log(user)
      const {register,handleSubmit,formState:{errors},setError} = useForm<LoginForm>()
      const [showPassword, setShowPassword] = useState(false);
     const onSubmit:SubmitHandler<LoginForm> = async (data)=>{
         console.log("data:", data);
         try {
+          dispatch(setLoading(true));
     const response = await api.post("/api/auth/login", data);
+    dispatch(setUser(response.data.user));
+      navigate("/");
     console.log(response.data);
   } catch (error) {
     if (axios.isAxiosError(error)){
@@ -30,6 +43,9 @@ const Login = () => {
           message: message || "Username or email is incorrect",
         });
       }}}
+      finally{
+        dispatch(setLoading(false));
+      }
         }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4 ">

@@ -125,12 +125,13 @@ export const logoutUserController = async (req: Request, res: Response) => {
  */
 export const getMeController = async (req: Request, res: Response) => {
   const user = await userModel.findById(req.user.id);
+  // console.log(req.user)
   if (!user) {
     return res.status(404).json({
       message: "User not found",
     });
   }
-  res.status(200).json({
+  res.status(201).json({
     message: "User details fetched successfully",
     user: {
       id: user._id,
