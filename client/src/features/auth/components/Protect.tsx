@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "../redux/app/hook";
 import { setLoading } from "../redux/app/loadingSlice";
 import { setUser } from "../redux/app/authSlice";
 import { useEffect, useState } from "react";
-import { getMe } from "../services/api";
+import { getMe } from "../api/authApi";
 import Loading from "./Loading";
 
 type ProtectedProps = {
@@ -21,10 +21,9 @@ const Protected = ({ children }: ProtectedProps) => {
         dispatch(setLoading(true));
         const data = await getMe();
         dispatch(setUser(data.user));
-        console.log("GET ME DATA:", data);
-        console.log("GET ME USER:", data.user);
+        // console.log("GET ME DATA:", data);
+        // console.log("GET ME USER:", data.user);
       } catch (error) {
-        console.log("Not authenticated");
       } finally {
         dispatch(setLoading(false));
         setChecked(true);
@@ -34,7 +33,6 @@ const Protected = ({ children }: ProtectedProps) => {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log("UPDATED USER:", user);
   }, [user]);
 
   if (!checked || loading) {
@@ -43,10 +41,8 @@ const Protected = ({ children }: ProtectedProps) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
-
-
+  };
   return children;
-};
 }
 
 export default Protected;

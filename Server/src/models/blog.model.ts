@@ -19,24 +19,29 @@ const blogSchema = new mongoose.Schema(
       type: [String],
       required: [true, "At least one tag is required"],
       validate: {
-        validator: (tags: string[]) => tags.length >= 1,
+        validator: (tags: string[]) => tags.length > 0,
         message: "Blog must have at least one tag",
       },
     },
-    media: [
-      {
-        url: {
-          type: String,
-          required: true,
-          trim: true,
+    media: {
+      type: [
+        {
+          url: {
+            type: String,
+          },
+          fileId: {
+            type: String,
+          },
+          name: {
+            type: String,
+          },
+          mimeType: {
+            type: String,
+          },
         },
-        type: {
-          type: String,
-          enum: ["image", "video"],
-          required: true,
-        },
-      },
-    ],
+      ],
+      default: [],
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

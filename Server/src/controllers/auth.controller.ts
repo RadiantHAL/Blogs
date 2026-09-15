@@ -4,14 +4,21 @@ import { Request, Response } from "express";
 import blacklistTokenModel from "../models/blacklist.model";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { error } from "node:console";
+import { catchAsync } from "../utils/catchAsync";
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: 24 * 60 * 60 * 1000, // 1 day
+};
 
 /**
  * @name registerUserController
  * @description This function is used to register a new user.
  * @access public
  */
-export const registerUserController = async (req: Request, res: Response) => {
+export const registerUserController = catchAsync(async (req: Request, res: Response) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
     return res
@@ -49,7 +56,7 @@ export const registerUserController = async (req: Request, res: Response) => {
     process.env.JWT_SECRET!,
     { expiresIn: "1d" },
   );
-  res.cookie("token", token);
+  res.cookie("token", token, COOKIE_OPTIONS);
   return res.status(201).json({
     message: "User registered successfully",
     user: {
@@ -58,13 +65,14 @@ export const registerUserController = async (req: Request, res: Response) => {
       email: user.email,
     },
   });
-};
+});
+
 /**
  * @name loginUserController
  * @description This function is used to login a user.
  * @access public
  */
-export const loginUserController = async (req: Request, res: Response) => {
+export const loginUserController = catchAsync(async (req: Request, res: Response) => {
   const { identifier, password } = req.body;
 
   if (!identifier) {
@@ -80,8 +88,6 @@ export const loginUserController = async (req: Request, res: Response) => {
     $or: [{ username: identifier }, { email: identifier }],
   });
 
-  // console.log("identifier:", identifier);
-  // console.log("user:", user);
   if (!user) {
     return res.status(401).json({ message: "User not found" });
   }
@@ -95,7 +101,7 @@ export const loginUserController = async (req: Request, res: Response) => {
     process.env.JWT_SECRET!,
     { expiresIn: "1d" },
   );
-  res.cookie("token", token);
+  res.cookie("token", token, COOKIE_OPTIONS);
   res.status(200).json({
     message: "User logged in successfully",
     user: {
@@ -104,34 +110,35 @@ export const loginUserController = async (req: Request, res: Response) => {
       email: user.email,
     },
   });
-};
+});
+
 /**
  * @name logoutUserController
  * @description clear token from user cookie and add token in blacklist
  * @access public
  */
-export const logoutUserController = async (req: Request, res: Response) => {
+export const logoutUserController = catchAsync(async (req: Request, res: Response) => {
   const token = req.cookies.token;
   if (token) {
     await blacklistTokenModel.create({ token });
   }
   res.clearCookie("token");
   res.status(200).json({ message: "User logged out successfully" });
-};
+});
+
 /**
  * @name getMeController
  * @description get the current logged in user details
  * @access private
  */
-export const getMeController = async (req: Request, res: Response) => {
-  const user = await userModel.findById(req.user.id);
-  // console.log(req.user)
+export const getMeController = catchAsync(async (req: Request, res: Response) => {
+  const user = await userModel.findById(req.user.id).lean();
   if (!user) {
     return res.status(404).json({
       message: "User not found",
     });
   }
-  res.status(201).json({
+  res.status(200).json({
     message: "User details fetched successfully",
     user: {
       id: user._id,
@@ -139,4 +146,4 @@ export const getMeController = async (req: Request, res: Response) => {
       email: user.email,
     },
   });
-};
+});
