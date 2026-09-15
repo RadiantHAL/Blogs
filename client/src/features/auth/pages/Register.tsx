@@ -5,8 +5,9 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Button from "../components/Button";
 import AuthToggle from "../components/AuthToggle";
-import api from "../services/api";
+import api from "../api/api";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function getStrength(password: string) {
   let score = 0;
@@ -27,12 +28,12 @@ const Register = () => {
     setError
   } = useForm<RegisterForm>();
   const password = watch("password");
+  const navigate = useNavigate();
   const { score, label } = getStrength(password || "");
   const onSubmit: SubmitHandler<RegisterForm> = async (data) => {
     try {
       const { ConfimPassword, ...userData } = data;
-      const response = await api.post("/api/auth/register", userData);
-      console.log(response.data);
+      const response = await api.post("register", userData);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const field = error.response?.data?.field;
@@ -52,6 +53,8 @@ const Register = () => {
           });
         }
       }
+    }finally{
+      navigate("/dashboard");
     }
   };
   const [showPassword, setShowPassword] = useState(false);

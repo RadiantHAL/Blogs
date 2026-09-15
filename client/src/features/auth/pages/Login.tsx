@@ -5,7 +5,7 @@ import AuthToggle from '../components/AuthToggle'
 import Error from '../components/Error'
 import { Eye, EyeOff } from 'lucide-react'
 import Button from '../components/Button'
-import api from '../services/api'
+import api from '../api/api'
 import axios from 'axios'
 import { useAppDispatch,useAppSelector } from '../redux/app/hook'
 import { useNavigate } from 'react-router-dom'
@@ -18,17 +18,14 @@ const Login = () => {
   const user = useAppSelector(
     (state) => state.auth.user
   );
-  console.log(user)
      const {register,handleSubmit,formState:{errors},setError} = useForm<LoginForm>()
      const [showPassword, setShowPassword] = useState(false);
     const onSubmit:SubmitHandler<LoginForm> = async (data)=>{
-        console.log("data:", data);
         try {
           dispatch(setLoading(true));
-    const response = await api.post("/api/auth/login", data);
+    const response = await api.post("/login", data);
     dispatch(setUser(response.data.user));
-      navigate("/");
-    console.log(response.data);
+
   } catch (error) {
     if (axios.isAxiosError(error)){
     const message = error.response?.data?.message;
@@ -45,6 +42,7 @@ const Login = () => {
       }}}
       finally{
         dispatch(setLoading(false));
+        navigate("/dashboard");
       }
         }
   return (

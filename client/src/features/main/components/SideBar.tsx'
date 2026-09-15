@@ -1,0 +1,108 @@
+import { useState, useEffect } from "react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  MessageCircle,
+  Share2,
+} from "lucide-react";
+import type { Blog } from "../types/type";
+import { likeBlog, dislikeBlog } from "../api/api";
+import { toast } from "react-hot-toast";
+
+type SideBarProps = {
+  blog: Blog;
+};
+
+const SideBar = ({ blog }: SideBarProps) => {
+  const [reaction, setReaction] = useState<"like" | "dislike" | null>(
+    blog.isLiked ? "like" : blog.isDisliked ? "dislike" : null
+  );
+
+  useEffect(() => {
+    setReaction(blog.isLiked ? "like" : blog.isDisliked ? "dislike" : null);
+  }, [blog.isLiked, blog.isDisliked]);
+
+  const handleLike = async () => {
+    try {
+      await likeBlog(blog._id);
+      setReaction(reaction === "like" ? null : "like");
+      toast.success(reaction === "like" ? "Unliked" : "Liked!");
+    } catch (error) {
+      toast.error("Failed to like blog");
+    }
+  };
+
+  const handleDislike = async () => {
+    try {
+      await dislikeBlog(blog._id);
+      setReaction(reaction === "dislike" ? null : "dislike");
+      toast.success(reaction === "dislike" ? "Undisliked" : "Disliked!");
+    } catch (error) {
+      toast.error("Failed to dislike blog");
+    }
+  };
+
+  return (
+    <aside className="flex w-full items-center justify-between rounded-2xl border border-gray-800 bg-gray-900/80 px-4 py-2 shadow-lg backdrop-blur">
+
+      {/* Like */}
+      <button
+        onClick={handleLike}
+        className={`group relative rounded-xl p-3 transition-all duration-300 hover:-translate-y-1 hover:scale-105 ${
+          reaction === "like"
+            ? "bg-blue-500/15"
+            : "hover:bg-gray-800"
+        }`}
+      >
+        <ThumbsUp
+          size={22}
+          className={`transition-all duration-300 ${
+            reaction === "like"
+              ? "fill-blue-500 text-blue-500 scale-110"
+              : "text-gray-400 group-hover:text-blue-400"
+          }`}
+        />
+      </button>
+
+      {/* Dislike */}
+      <button
+        onClick={handleDislike}
+        className={`group relative rounded-xl p-3 transition-all duration-300 hover:-translate-y-1 hover:scale-105 ${
+          reaction === "dislike"
+            ? "bg-red-500/15"
+            : "hover:bg-gray-800"
+        }`}
+      >
+        <ThumbsDown
+          size={22}
+          className={`transition-all duration-300 ${
+            reaction === "dislike"
+              ? "fill-red-500 text-red-500 scale-110"
+              : "text-gray-400 group-hover:text-red-400"
+          }`}
+        />
+      </button>
+
+      {/* Divider */}
+      <div className=" w-7 " />
+
+      {/* Comment */}
+      <button className="group rounded-xl p-3 transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-gray-800">
+        <MessageCircle
+          size={22}
+          className="text-gray-400 transition-colors duration-300 group-hover:text-blue-400"
+        />
+      </button>
+
+      {/* Share */}
+      <button className="group rounded-xl p-3 transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-gray-800">
+        <Share2
+          size={22}
+          className="text-gray-400 transition-colors duration-300 group-hover:text-emerald-400"
+        />
+      </button>
+    </aside>
+  );
+};
+
+export default SideBar;
